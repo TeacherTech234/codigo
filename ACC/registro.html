@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="Imagens/LogoPrincipal.jpg" type="image">
+</head>
+
+<body class="login-page">
+    <div class="login-container">
+
+        <div class="logo-container">
+            <img src="Imagens/LogoPrincipal.jpg" alt="Logo do site">
+        </div>
+
+        <h2>Crie sua conta</h2>
+        <!--"action='#'" é ignorado, porque o JS toma o controle-->
+        <form method="post" autocomplete="on">
+            <div id="errorMessage" class="error-message"></div>
+            <div class="input-group">
+
+                <label for="NomeUsuario">Crie seu nome de usuário:</label>
+                <input type="text" id="NomeUsuario" name="NomeUsuario" required placeholder="Seu nome de usuário"
+                    maxlength="50">
+                    <br><br>
+
+                <label for="SenhaUsuario">Crie sua senha:</label>
+                <input type="password" id="SenhaUsuario" name="SenhaUsuario" required placeholder="Sua senha"
+                    maxlength="50">
+                    <br><br>
+
+                <label for="NomeCompleto">Nome:</label>
+                <input type="text" id="NomeCompleto" name="NomeCompleto" required placeholder="Seu nome"
+                    maxlength="50">
+                    <br><br>
+
+                <label for="Email">E-mail:</label>
+                <input type="email" id="Email" name="Email" placeholder="Seu e-mail" required maxlength="50">
+                <br><br>
+
+                <div class="links">
+                    <input class="links" type="reset" value="Limpar campos">
+                </div>
+
+            </div>
+
+            <br>
+            <button type="submit" class="login-button">Criar</button>
+            <br>
+
+        </form>
+
+        <div class="links">
+            <a href="index.html" class="links">Fazer login</a>
+        </div>
+
+        <br><br>
+
+    </div>
+    <script src="app.js"></script> <!--Carrega o JS externo-->
+</body>
+
+</html>

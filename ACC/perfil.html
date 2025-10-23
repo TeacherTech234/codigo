@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="Imagens/LogoPrincipal.jpg" type="image">
+</head>
+
+<body class="login-page">
+    <div class="login-container">
+
+        <form id="recoverForm">
+            <!-- mostra as suas informações -->
+            <fieldset>
+                <legend>INFORMAÇÕES DO USUÁRIO AQUI:</legend><br>
+                <div id="userData" class="profile-data"></div>
+            </fieldset><br><br>
+            <br><br><br>
+
+            <!-- volta pro login -->
+            <p style="text-align: center;">
+                <a class="links" href="index.html">VOLTAR PARA FAZER LOGIN</a>
+            </p> <br><br>
+
+            <!-- sai da conta -->
+            <p style="text-align: center;">
+                <button id="logoutBtn" class="links">SAIR DESTA CONTA</button>
+            </p><br><br>
+            </p><br><br>
+            <br><br><br>
+
+
+            <details closed>
+                <summary> TROCAR SENHA / NOME </summary>
+                <br>
+                <p>
+                    Caso esqueceu a senha, você pode trocar ela aqui.
+                </p>
+                <br>
+
+                <legend>TROCAR SENHA</legend>
+                <input type="password" id="novaSenha" placeholder="Digite a nova senha"><br>
+                <button type="button" class="links" onclick="trocarSenha()">Trocar Senha</button>
+
+                <br><br><br>
+
+                <legend>TROCAR NOME</legend>
+                <input type="text" id="novoNome" placeholder="Digite o novo nome"><br>
+                <button type="button" class="links" onclick="trocarNome()">Trocar Nome</button>
+
+            </details>
+
+
+            <br><br><br><br><br>
+            <!-- apagar a conta -->
+            <p style="color: rgb(255,255,255); text-align: center;">
+                <button id="deleteAccountBtn" class="links LinksDelete">
+                    APAGAR ESTA CONTA</button>
+
+        </form>
+    </div>
+
+
+    <script>
+        const userData = JSON.parse(localStorage.getItem("UserData")); // pega do localStorage os dados do user salvos como JSON
+        const container = document.getElementById("userData"); // seleciona o lugar onde vai mostrar os dados
+
+        if (userData) {
+            // formatação dos dados
+
+            // injeta os dados do usuário no HTML e se não tiver algo salvo, mostra a mensagem de erro
+            let html = `
+                <div class="profile-field">
+                    <label>Nome de usuário:</label>
+                    <div class="profile-value">${userData.NomeUsuario}</div>
+                </div>
+                
+                <div class="profile-field">
+                    <label>Nome completo:</label>
+                    <div class="profile-value">${userData.NomeCompleto}</div>
+                </div>
+                
+                <div class="profile-field">
+                    <label>E-mail:</label>
+                    <div class="profile-value">${userData.Email}</div>
+                </div>
+                `;
+            container.innerHTML = html;
+        }
+
+
+        // apaga os dados locais (apaga user do localStorage)
+        document.getElementById("logoutBtn").addEventListener("click", function (e) {
+            e.preventDefault(); // impede envio de form
+            localStorage.removeItem("UserData"); // apaga user
+            window.location.href = "index.html"; // redireciona pro login
+        });
+
+        // quando clica, manda um POST pra /deletar_conta, confirmando antes, e se der certo, exclui dados locais e manda pro login
+        document.getElementById("deleteAccountBtn").addEventListener("click", async function (e) {
+            e.preventDefault();
+
+            if (!confirm("Tem certeza que quer apagar essa conta? Isso é IRREVERSÍVEL!")) return; // mensagem de aviso
+
+            const response = await fetch("http://localhost:5000/deletar_conta", { // espera da requisição
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ NomeUsuario: userData.NomeUsuario })
+            });
+
+            const resultado = await response.json(); // espera da requisição
+
+            if (response.ok && resultado.status === "ok") {
+                alert("Conta deletada. Adeus, guerreiro(a)!"); // mensagem de despedida
+                localStorage.removeItem("UserData"); // apaga user
+                window.location.href = "index.html"; // redireciona pro login
+            } else { // mensagem de erro
+                alert("Erro ao deletar conta: " + (resultado.mensagem || "Desconhecido"));
+            }
+        });
+
+
+        // pega arquivo e cria FormData e depois manda pro back com fetch, se tiver sucesso, ele chama listarArquivos() pra atualizar a lista
+        function uploadArquivo() {
+            const file = document.getElementById("fileInput").files[0];
+            if (!file) return alert("Selecione um arquivo primeiro!"); // mensagem de aviso
+
+            const formData = new FormData();
+            formData.append("arquivo", file);
+            formData.append("NomeUsuario", userData.NomeUsuario);
+
+            fetch("http://localhost:5000/upload", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.mensagem);
+                    listarArquivos();
+                })
+                .catch(err => alert("Erro no upload: " + err.message)); // mensagem de erro
+        }
+
+
+        // puxa do flask os arquivos do user e cria <li> com link e botão de lixeira
+        function listarArquivos() {
+            fetch(`http://localhost:5000/listar_arquivos/${userData.NomeUsuario}`)
+                .then(res => res.json())
+                .then(data => {
+                    const lista = document.getElementById("listaArquivos");
+                    lista.innerHTML = "";
+                    data.arquivos.forEach(arq => {
+                        const li = document.createElement("li");
+                        li.innerHTML = `
+    <a href="http://localhost:5000/download/${arq}" target="_blank">${arq}</a>
+    <button onclick="event.preventDefault(); deletarArquivo('${arq}')"
+            style="margin-left: 10px;">🗑️</button>
+`;
+                        lista.appendChild(li);
+                    });
+                });
+        }
+
+
+        // confirma antes, assim depois, manda pro endpoint /deletar_arquivo
+        function deletarArquivo(nomeArquivo) {
+            if (!confirm(`Deseja mesmo apagar o arquivo "${nomeArquivo}"?`)) return; // mensagem de aviso
+
+            fetch("http://localhost:5000/deletar_arquivo", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ filename: nomeArquivo })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.mensagem);
+                    listarArquivos();
+                })
+                .catch(err => alert("Erro ao deletar: " + err.message)); // mensagem de erro
+        }
+        window.onload = listarArquivos;
+
+
+        // confirma antes, assim depois, manda pro /resetar_arquivos
+        function resetarArquivos() {
+            if (!confirm("Tem certeza que quer resetar seus arquivos? Isso vai apagar os atuais!")) return; // mensagem de aviso
+
+            fetch("http://localhost:5000/resetar_arquivos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ NomeUsuario: userData.NomeUsuario })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.mensagem);
+                    listarArquivos();
+                })
+                .catch(err => alert("Erro ao resetar arquivos: " + err.message)); // mensagem de erro
+        }
+
+
+        // // função assíncrona pra trocar a senha com await
+        async function trocarSenha() {
+            const novaSenha = document.getElementById("novaSenha").value;
+            if (!novaSenha) return alert("Digite a nova senha!");
+
+            const response = await fetch("http://localhost:5000/trocar_senha", {
+                // Faz uma requisição POST pro back-end em /trocar_senha no flask
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ Email: userData.Email, NovaSenha: novaSenha })
+            });
+
+            // espera o back mandar a resposta em JSON e guarda em resultado
+            const resultado = await response.json();
+            alert(resultado.mensagem); // mostra um alerta com a mensagem que veio do back-end
+        }
+
+        // função assíncrona pra trocar o nome com await
+        async function trocarNome() {
+            const novoNome = document.getElementById("novoNome").value;
+            if (!novoNome) return alert("Digite o novo nome!");
+
+            const response = await fetch("http://localhost:5000/trocar_nome", {
+                // Faz uma requisição POST pro back-end em /trocar_nome no flask
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ Email: userData.Email, NovoNome: novoNome })
+            });
+
+            // espera o back mandar a resposta em JSON e guarda em resultado
+            const resultado = await response.json();
+            alert(resultado.mensagem); // mostra um alerta com a mensagem que veio do back-end
+
+            // se deu certo, atualiza o localStorage e atualiza a página
+            if (resultado.status === "ok") {
+                userData.NomeCompleto = novoNome;
+                localStorage.setItem("UserData", JSON.stringify(userData));
+                window.location.reload(); // atualiza pra mostrar o novo nome no perfil
+            }
+        }
+
+    </script>
+</body>
+
+</html>

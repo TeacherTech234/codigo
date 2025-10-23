@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Tech - Criar Avaliação</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="Imagens/LogoPrincipal.jpg" type="image">
+</head>
+
+<body>
+  <header>
+    <h2>Teacher Tech - Informática</h2>
+    <nav>
+      <a href="home.html">Inicio</a>
+      <a href="banco.html">Banco de Questões</a>
+      <a href="avaliacao.html">Criar Avaliação</a>
+      <a href="sobre.html">Sobre</a>
+      <a href="index.html">Entrar</a>
+    </nav>
+  </header>
+
+  <section class="DM">
+    <h1>Criar Avaliação</h1>
+    <p>Monte sua prova personalizada em minutos.</p>
+    <h3>Comece Agora</h3>
+    <h1>Gerador de PDF a partir de Texto</h1>
+  </section>
+
+  <section class="CR">
+    <div class="CR">
+      <h3>📑 Pré-visualização</h3>
+      <p>Veja como ficará sua avaliação antes de imprimir.</p>
+    </div>
+  </section>
+
+  <!--
+rows - número de linhas visíveis
+cols - especifica a largura em termos de colunas
+placeholder - texto para exemplificar
+-->
+  <textarea id="meuTexto" rows="10" cols="30"
+    placeholder="Escreva qualquer coisa usando o alfabeto latino...">
+Disciplina:
+Modelo:
+Professor(a):
+Ano / Segmento / Curso:
+Período letivo:
+Data:
+Aluno(a):
+Nota:
+</textarea>
+  <br>
+
+  <!--chama a função gerarPDF() no JS com um botão-->
+  <section class="DM">
+    <button onclick="gerarPDF()">Gerar PDF</button>
+  </section>
+
+  <script src="biblioteca/jsPDF.js"></script>
+  <script>
+    // cria a função gerarPDF
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf; // pega só a classe jsPDF do objeto global
+
+      let texto = document.getElementById("meuTexto").value; // guarda numa variável, o que o usuário digitou na área de texto
+
+      // caso o texto (variável) estiver vazio (ou só espaços), envia um alert e cancela a função
+      if (!texto.trim()) { // trim() no JS remove espaços em branco do início e fim de uma string
+        alert("Escreva algo antes de gerar um PDF");
+        return;
+      }
+
+      const doc = new jsPDF(); //cria um novo pdf na memória
+      const margemEsq = 10; // margem esquerda em milímetros
+      const margemTopo = 10; // margem superior  em milímetros
+      const alturaLinha = 8; // espaçamento entre linhas
+      const alturaPagina = doc.internal.pageSize.height; // obtém altura da página atual em mm
+      const larguraPagina = doc.internal.pageSize.width; // obtém largura da página atual em mm
+
+      // método para quebrar o texto em várias linhas para cabir na página
+      const linhas = doc.splitTextToSize(texto, larguraPagina - margemEsq * 2); // descontando as margens
+
+      let y = margemTopo; // posição vertical (y) onde o texto começa
+
+      linhas.forEach(linha => { // loop para ir em cada linha e já quebrado para inserir no pdf
+        if (y + alturaLinha > alturaPagina - margemTopo) { // vendo se a próxima linha vai ultrapassar o limite da página (alturaPagina - margemTopo)
+          doc.addPage(); // cria uma nova página pdf
+          y = margemTopo;
+        } // Volta y para o topo da nova página
+
+        doc.text(linha, margemEsq, y); // escreve a linha no pdf na posição
+        y += alturaLinha;
+      }); // descer a escrita para a próxima linha
+
+      doc.save("arquivo.pdf"); // gera um arquivo / manda baixar com o nome "arquivo.pdf"
+    }
+  </script>
+
+  <footer>
+    <p>&copy; 2025 Teacher Tech - Informática. Todos os direitos reservados.</p>
+  </footer>
+</body>
+
+</html>

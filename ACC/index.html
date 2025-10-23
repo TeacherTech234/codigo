@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="Imagens/LogoPrincipal.jpg" type="image">
+</head>
+
+<body class="login-page">
+    <div class="login-container">
+
+        <div class="logo-container">
+            <img src="Imagens/LogoPrincipal.jpg" alt="Logo do site">
+        </div>
+
+        <h2>Bem-vindo(a)!</h2>
+
+        <form  id="loginForm">
+            <div id="errorMessage" class="error-message"></div>
+            
+            <div class="input-group">
+                <label for="NomeUsuario">Seu nome de usuário:</label>
+                <input type="text" id="NomeUsuario" placeholder="Usuário" required>
+                <br><br>
+
+                <label for="SenhaUsuario">Sua senha:</label>
+                <input type="password" id="SenhaUsuario" placeholder="Senha" required>
+                <br><br>
+            </div>
+            
+            <button type="submit" class="login-button">Entrar</button>
+        </form>
+
+        <div class="links">
+            <a href="perfil.html" class="forgot-password">Suas informações</a>
+            <br><br>
+            <a href="registro.html" class="register-link">Criar conta</a>
+            <br><br>
+            <a href="home.html" class="register-link">Página principal</a>
+        </div>
+    </div>
+    <script src="app.js"></script> <!--Carrega o JS externo-->
+</body>
+
+</html>
